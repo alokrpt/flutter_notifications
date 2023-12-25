@@ -1,10 +1,10 @@
 # flutter_notifications
 
-A new Flutter project.
+Flutter project for scheduling notifications.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project uses flutter_local_notifications for scheduling/cancelling mobile notifications.
 
 A few resources to get you started if this is your first Flutter project:
 

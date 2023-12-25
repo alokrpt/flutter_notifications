@@ -1,0 +1,11 @@
+{
+    "editor.fontSize": 13,
+    "editor.formatOnSave": true,
+    "editor.acceptSuggestionOnEnter": "smart",
+    "editor.suggest.showStatusBar": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.fixAll": "explicit"
+    }
+}
