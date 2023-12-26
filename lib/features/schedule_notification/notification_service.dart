@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart';
 import 'package:timezone/timezone.dart' as time_zone;
 
 class NotificationService {
@@ -11,6 +12,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin localNotificationPlugin =
       FlutterLocalNotificationsPlugin();
   Future<void> init() async {
+    initializeTimeZones();
     await localNotificationPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
@@ -43,13 +45,14 @@ class NotificationService {
     );
   }
 
-  Future<void> scheduleNotification(
-    String title,
+  Future<void> scheduleNotification({
+    int? notificationId,
+    required String title,
     String? description,
-    DateTime? time, {
-    Map<String, dynamic>? payload,
+    DateTime? time,
+    String? payload,
   }) async {
-    var id = Random().nextInt(1000);
+    notificationId ??= Random().nextInt(1000);
     if (time == null ||
         time.toLocal().isBefore(time_zone.TZDateTime.now(time_zone.local).add(
               const Duration(seconds: 2),
@@ -57,11 +60,13 @@ class NotificationService {
       time = null; // reset time if its in past or immediate or null
     }
     await localNotificationPlugin.zonedSchedule(
-      id,
+      notificationId,
       title,
       description,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      payload: payload == null ? null : jsonEncode(payload),
+      payload: payload == null
+          ? time?.millisecondsSinceEpoch.toString()
+          : jsonEncode(payload),
       time == null
           ? time_zone.TZDateTime.now(time_zone.local).add(
               const Duration(seconds: 2),

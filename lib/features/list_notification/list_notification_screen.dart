@@ -21,45 +21,97 @@ class _ListNotificationScreenState extends State<ListNotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Notifications'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () async {
-          final isUpdated = await showModalBottomSheet(
-            context: context,
-            builder: (context) => NotificationForm(),
-          );
-          if (isUpdated) {}
-        },
-      ),
-      body: ListView.builder(
-        itemCount: notifications.length,
-        itemBuilder: (context, index) => Card(
-          child: Column(
-            children: [
-              Text('Id: ${notifications[index].id}'),
-              Text('Title: ${notifications[index].title}'),
-              Text('Message: ${notifications[index].body}'),
-              Row(
-                children: [
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Delete'),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Edit'),
-                  ),
-                ],
-              )
-            ],
-          ),
+    return RefreshIndicator(
+      onRefresh: () => fetchScheduledNotifications(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Upcoming Notifications'),
         ),
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.add),
+          onPressed: () async {
+            await openNotificationForm(context, null);
+          },
+        ),
+        body: notifications.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'No upcoming notifications \nCreate a new notification by clicking + icon',
+                      textAlign: TextAlign.center,
+                    ),
+                    TextButton(
+                      onPressed: () => fetchScheduledNotifications(),
+                      child: const Text('Refresh'),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: notifications.length,
+                itemBuilder: (context, index) => Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.all(16).copyWith(bottom: 0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0).copyWith(bottom: 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Id: ${notifications[index].id}'),
+                        Text('Title: ${notifications[index].title}'),
+                        Text('Message: ${notifications[index].body}'),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                NotificationService
+                                    .instance.localNotificationPlugin
+                                    .cancel(notifications[index].id);
+                                fetchScheduledNotifications();
+                              },
+                              child: const Text('Delete'),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                await openNotificationForm(
+                                    context, notifications[index]);
+                              },
+                              child: const Text('Edit'),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
+  }
+
+  Future<void> openNotificationForm(
+    BuildContext context,
+    PendingNotificationRequest? notificationRequest,
+  ) async {
+    final isUpdated = await showDialog(
+      context: context,
+      builder: (context) => NotificationForm(
+        notificationRequest: notificationRequest,
+      ),
+    );
+    if (isUpdated == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Notification Saved Successfully!',
+          ),
+        ),
+      );
+      fetchScheduledNotifications();
+    }
   }
 
   Future<void> fetchScheduledNotifications() async {
