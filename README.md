@@ -6,9 +6,9 @@ Flutter project for scheduling notifications.
 
 Create/Schedule notifications
 
-List schedules notifications
+List scheduled notifications
 
-Edit/Delete any schedules notification
+Edit/Delete any scheduled notification
 
 Customise title/body of notifications
 
